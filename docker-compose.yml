@@ -1,0 +1,22 @@
+services:
+  api:
+    build: .
+    container_name: rate-limiter-api
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+  
+  redis:
+    image: redis:8-alpine
+    container_name: rate-limiter-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli","PING"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      
