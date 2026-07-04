@@ -3,6 +3,7 @@ import fs  from "node:fs/promises"
 import {env} from '../config/env';
 import {redis} from "../config/redis"
 import { consumeTokenResult } from "../types/tokenBucket";
+import { error } from "node:console";
 
 let scriptSha!:string;
 
@@ -28,11 +29,23 @@ async function executeScript(key:string):Promise<number[]>{
 export async function consumeToken(clientId:string):Promise<consumeTokenResult>{
     if(!scriptSha)throw new Error("Lua script has not been loaded");
     const key=`rateLimit:${clientId}`;
-    let result:number[];
+    let result!:number[];
     try{
-        result=await executeScript(key);
+        result=await executeScript(key); 
     }catch(err){
-       
+       if(err instanceof Error && err.message.includes("NOSCRIPT")){
+            console.log("Missing Lua script.Reloading ...")
+            await loadTokenBucketScript();
+            const result=executeScript(key)
+       }
+       else{
+        throw error;
+       }
+    }
+    return {
+        allowed:result[0]===1,
+        remainingTokens:result[1],
+        retryAfter:result[2]
     }
 
 }
