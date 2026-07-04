@@ -1,12 +1,14 @@
 import app from "./app";
 import { env } from "./config/env";
 import { redis } from "./config/redis";
+import { loadTokenBucketScript } from "./services/tokenBucket.service";
 
 let server: ReturnType<typeof app.listen>;
 
 async function bootstrap() {
     try {
         await redis.connect();
+        await loadTokenBucketScript();
         server = app.listen(env.PORT, () => {
             console.log(`🚀 Server running on port ${env.PORT}`);
         });

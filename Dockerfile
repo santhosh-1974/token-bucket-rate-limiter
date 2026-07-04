@@ -24,6 +24,7 @@ RUN addgroup -S appgroup && \
 COPY --chown=appuser:appuser --from=builder /app/dist ./dist
 COPY --chown=appuser:appuser --from=builder /app/node_modules ./node_modules
 COPY --chown=appuser:appuser --from=builder /app/package.json ./
+COPY --chown=appuser:appgroup --from=builder /app/src/lua ./src/lua
 
 USER appuser
 EXPOSE 5000
