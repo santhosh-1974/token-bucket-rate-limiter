@@ -25,7 +25,7 @@ async function executeScript(key:string):Promise<number[]>{
     }
     )) as number[];
 }
-export async function consmeToken(clientId:string):Promise<consumeTokenResult>{
+export async function consumeToken(clientId:string):Promise<consumeTokenResult>{
     if(!scriptSha)throw new Error("Lua script has not been loaded");
     const key=`rateLimit:${clientId}`;
     let result:number[];
