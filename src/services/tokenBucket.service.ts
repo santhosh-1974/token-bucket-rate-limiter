@@ -3,7 +3,6 @@ import fs  from "node:fs/promises"
 import {env} from '../config/env';
 import {redis} from "../config/redis"
 import { consumeTokenResult } from "../types/tokenBucket";
-import { error } from "node:console";
 
 let scriptSha!:string;
 

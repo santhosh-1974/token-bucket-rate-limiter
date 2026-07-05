@@ -16,7 +16,7 @@ end
 
 local ellapsed=(currentTime-lastRefill)/1000
 tokens=math.min(capacity,tokens+(ellapsed*refillRate))
-lastRefill=currenTime
+lastRefill=currentTime
 
 if tokens<1 then
     redis.call("HMSET",key,"tokens",tokens,"lastRefill",lastRefill)

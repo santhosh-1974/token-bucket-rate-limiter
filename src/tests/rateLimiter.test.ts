@@ -3,19 +3,25 @@ import { describe ,it,expect,beforeAll,afterAll,beforeEach} from "vitest";
 import app from "../app"
 import {redis} from "../config/redis"
 import { loadTokenBucketScript } from "../services/tokenBucket.service";
-import {env} from "../config/env"
+import dotenv from "dotenv"
+dotenv.config({
+    path:".env.test"
+})
 
-const CAPACITY=env.RATE_LIMIT_CAPACITY
+const CAPACITY=Number(process.env.RATE_LIMIT_CAPACITY);
 
 describe("Token Bucket Rate Limiter",()=>{
     beforeAll(async()=>{
+        await redis.connect();
         await loadTokenBucketScript();
     })
     beforeEach(async()=>{
         await redis.flushDb();
     })
     afterAll(async()=>{
-        await redis.quit();
+        if (redis.isOpen) {
+            await redis.quit();
+        }
     })
     it("should allow the first request",async()=>{
         const response=await request(app).get('/');
@@ -23,7 +29,7 @@ describe("Token Bucket Rate Limiter",()=>{
         expect(response.body.success).toBe(true)
     })
     it("should reject requests after capacity is exhausted",async()=>{
-        for(let i=0;i<env.RATE_LIMIT_CAPACITY;i++){
+        for(let i=0;i<CAPACITY;i++){
             await request(app).get('/');
         }
         const response =await request(app).get('/');
@@ -31,22 +37,22 @@ describe("Token Bucket Rate Limiter",()=>{
     })
     it("Should send rate limit headers",async()=>{
         const response=await request(app).get('/');
-        expect(response.headers['x-RateLimit-limit']).toBeDefined();
-        expect(response.headers['x-RateLimtit-remaining']).toBeDefined();
+        expect(response.headers['x-ratelimit-limit']).toBeDefined();
+        expect(response.headers['x-ratelimit-remaining']).toBeDefined();
     })
     it("Should send RetryAfter header",async()=>{
-        for(let i=0;i<env.RATE_LIMIT_CAPACITY;i++){
+        for(let i=0;i<CAPACITY;i++){
             await request(app).get('/')
         }
         const response=await request(app).get('/');
-        expect(response.headers['x-RetryAfter']).toBeGreaterThanOrEqual(1);
+        expect(Number(response.headers['retryafter'])).toBeGreaterThanOrEqual(1);
     })
     it("should allow requests again after tokens are refilled",async()=>{
-        for(let i=0;i<env.RATE_LIMIT_CAPACITY;i++){
+        for(let i=0;i<CAPACITY;i++){
             await request(app).get('/')
         }
         await new Promise(resolve=>{
-            setTimeout(resolve,env.RATE_LIMIT_REFILL_RATE*1000)
+            setTimeout(resolve,Number(process.env.RATE_LIMIT_REFILL_RATE)*1000)
         })
         const response=await request(app).get("/");
         

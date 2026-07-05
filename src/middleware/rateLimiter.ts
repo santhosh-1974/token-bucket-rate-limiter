@@ -13,10 +13,10 @@ export async function rateLimiter(req:Request,res:Response,next:NextFunction):Pr
         return;
         }
         const result=await consumeToken(clientId);
-        res.setHeader("X-RateLimit-limit",env.RATE_LIMIT_CAPACITY)
-        res.setHeader("X-RateLimit-remaining",result.remainingTokens.toString());
+        res.setHeader("X-ratelimit-limit",env.RATE_LIMIT_CAPACITY)
+        res.setHeader("X-ratelimit-remaining",result.remainingTokens.toString());
         if(!result.allowed){
-            res.setHeader("RetryAfter",result.retryAfter.toString());
+            res.setHeader("retryafter",result.retryAfter.toString());
             res.status(429).json({
                 success: false,
                 message: "Too Many Requests",
