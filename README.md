@@ -1,129 +1,109 @@
-# Token Bucket Rate Limiter
+# 🚦 Token Bucket Rate Limiter
 
-A production-ready Token Bucket Rate Limiter built with **Express**, **TypeScript**, **Redis**, **Lua Scripting**, **Docker**, and **GitHub Actions**.
-
-The project demonstrates how to implement a high-performance distributed rate limiter using Redis and Lua while ensuring atomic operations, preventing race conditions, and providing reliable request throttling for REST APIs.
+A production-inspired **Token Bucket Rate Limiter** built with **Node.js, Express, TypeScript, Redis, and Lua**. The project demonstrates atomic distributed rate limiting using Redis Lua scripts, containerized development with Docker, automated testing with GitHub Actions, and performance testing using k6.
 
 ---
 
-## Features
+## ✨ Features
 
-- Token Bucket rate limiting algorithm
-- Redis-backed distributed storage
-- Atomic bucket updates using Lua scripting
-- Express middleware integration
-- Configurable rate limit capacity and refill rate
-- Standard Rate Limit response headers
-- Retry-After header support
-- Dockerized development environment
-- Multi-stage Docker build
-- Non-root production container
-- Integration tests using Vitest and Supertest
-- GitHub Actions Continuous Integration
+- 🚀 Token Bucket rate limiting algorithm
+- ⚡ Atomic token updates using Redis Lua scripting
+- 🔒 Security headers with Helmet
+- 🌐 CORS support
+- 📝 Structured HTTP request logging with Pino
+- 🐳 Docker & Docker Compose support
+- ✅ Integration testing with Vitest & Supertest
+- 🔄 Continuous Integration with GitHub Actions
+- 📈 Load testing using k6
+- 🏗️ Clean Express architecture (Routes → Middleware → Controllers → Services)
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- TypeScript
-- Node.js
-- Express
-- Redis
-- Lua
-- Docker
-- Docker Compose
-- Vitest
-- Supertest
-- GitHub Actions
-
----
-
-## Architecture
-
-```
-                HTTP Request
-                      │
-                      ▼
-              Express Server
-                      │
-                      ▼
-         Rate Limiter Middleware
-                      │
-                      ▼
-          Token Bucket Service
-                      │
-                      ▼
-                 Redis + Lua
-                      │
-                      ▼
-          Atomic Bucket Update
-                      │
-          ┌───────────┴───────────┐
-          │                       │
-     Allow Request          Reject Request
-```
+| Category | Technologies |
+|----------|--------------|
+| Language | TypeScript |
+| Runtime | Node.js |
+| Framework | Express |
+| Database | Redis |
+| Scripting | Lua |
+| Containerization | Docker, Docker Compose |
+| Testing | Vitest, Supertest |
+| Load Testing | k6 |
+| CI/CD | GitHub Actions |
+| Logging | Pino HTTP |
+| Security | Helmet, CORS |
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
-```
-token-bucket-rate-limiter
+```text
+src
 │
-├── .github/
-│   └── workflows/
-│       └── ci.yml
+├── app.ts
+├── server.ts
 │
-├── src/
-│   ├── config/
-│   │   ├── env.ts
-│   │   └── redis.ts
-│   │
-│   ├── lua/
-│   │   └── tokenBucket.lua
-│   │
-│   ├── middleware/
-│   │   └── rateLimiter.ts
-│   │
-│   ├── services/
-│   │   └── tokenBucket.service.ts
-│   │
-│   ├── tests/
-│   │   └── rateLimiter.test.ts
-│   │
-│   ├── app.ts
-│   └── server.ts
+├── config
+│   ├── env.ts
+│   └── redis.ts
 │
-├── Dockerfile
-├── docker-compose.yml
-├── package.json
-└── README.md
+├── controllers
+│   ├── demo.controller.ts
+│   └── health.controller.ts
+│
+├── middleware
+│   └── rateLimiter.ts
+│
+├── routes
+│   ├── demo.routes.ts
+│   ├── health.routes.ts
+│   └── index.ts
+│
+├── services
+│   └── tokenBucket.service.ts
+│
+├── lua
+│   └── tokenBucket.lua
+│
+└── tests
 ```
 
 ---
 
-## How the Token Bucket Algorithm Works
+## 📡 API Endpoints
 
-Each client is assigned a bucket containing a fixed number of tokens.
-
-- Every request consumes one token.
-- Tokens are automatically refilled at a fixed rate.
-- Requests are allowed while tokens are available.
-- Once the bucket becomes empty, additional requests receive **HTTP 429 Too Many Requests**.
-- The client can retry after tokens have been replenished.
-
-Redis stores the bucket state, while a Lua script performs all updates atomically to eliminate race conditions during concurrent requests.
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/health` | Health check endpoint |
+| GET | `/demo/public` | Public endpoint |
+| GET | `/demo/protected` | Protected by Token Bucket rate limiter |
+| GET | `/demo/slow` | Simulates a slow endpoint |
+| GET | `/demo/burst` | Demonstrates configurable rate limiting |
 
 ---
 
-## Environment Variables
+## ⚙️ Environment Variables
 
-Copy `.env.example` to `.env`.
+Create a `.env` file from the example.
+
+```bash
+cp .env.example .env
+```
+
+Windows PowerShell
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Example:
 
 ```env
 PORT=5000
 
-REDIS_URL=redis://redis:6379
+REDIS_URL=redis://localhost:6379
 
 RATE_LIMIT_CAPACITY=10
 RATE_LIMIT_REFILL_RATE=1
@@ -132,35 +112,25 @@ RATE_LIMIT_TTL=60
 
 ---
 
-## Running the Project
+## 🐳 Running with Docker
 
-### Clone Repository
-
-```bash
-git clone https://github.com/<your-username>/token-bucket-rate-limiter.git
-
-cd token-bucket-rate-limiter
-```
-
----
-
-### Start with Docker
+Build and start the application.
 
 ```bash
 docker compose up --build
 ```
 
-Server starts on
-
-```
-http://localhost:5000
-```
-
 ---
 
-## Running Tests
+## 🧪 Running Tests
 
-Run the integration test container.
+Run all integration tests.
+
+```bash
+npm test
+```
+
+or using Docker
 
 ```bash
 docker compose up --build test
@@ -168,125 +138,68 @@ docker compose up --build test
 
 ---
 
-## API
+## 📈 Load Testing
 
-### Request
+Run the k6 load test.
 
+```bash
+k6 run load-test/rateLimiter.js
 ```
-GET /
-```
+
+Example metrics collected:
+
+- Average Response Time
+- P95 Latency
+- Throughput (Requests/sec)
+- Allowed Requests
+- Blocked Requests
 
 ---
 
-### Successful Response
-
-Status
-
-```
-200 OK
-```
-
-Headers
-
-```
-X-RateLimit-Limit: 10
-
-X-RateLimit-Remaining: 9
-```
-
-Response
-
-```json
-{
-    "success": true,
-    "message": "Request allowed"
-}
-```
-
----
-
-### Rate Limited Response
-
-Status
-
-```
-429 Too Many Requests
-```
-
-Headers
-
-```
-Retry-After: 1
-
-X-RateLimit-Limit: 10
-
-X-RateLimit-Remaining: 0
-```
-
-Response
-
-```json
-{
-    "success": false,
-    "message": "Too Many Requests"
-}
-```
-
----
-
-## Testing
-
-The project includes integration tests covering:
-
-- First request allowed
-- Bucket capacity exhaustion
-- Rate limit headers
-- Retry-After header
-- Token refill
-- Separate buckets for different clients
-- Concurrent request handling
-
----
-
-## Docker
-
-The project uses a multi-stage Docker build.
-
-### Build Stages
-
-- **deps** – installs dependencies
-- **builder** – compiles TypeScript
-- **test** – runs integration tests
-- **runner** – production image with only runtime dependencies
-
-The production container runs as a **non-root user** for improved security.
-
----
-
-## Continuous Integration
+## 🔄 Continuous Integration
 
 GitHub Actions automatically:
 
-- Builds the Docker images
+- Builds Docker images
 - Starts Redis
-- Executes integration tests
-- Reports build status for every push and pull request
+- Runs integration tests
+- Reports pass/fail status on every push and pull request
 
 ---
 
-## Future Improvements
+## 🧠 How the Token Bucket Works
 
-- Sliding Window algorithm
-- Leaky Bucket algorithm
-- Per-user rate limiting
-- Per-route configuration
-- Distributed metrics
-- Prometheus integration
-- Grafana dashboard
-- API key based rate limiting
+1. Each client is assigned a token bucket in Redis.
+2. Every incoming request consumes one token.
+3. Tokens are replenished over time at a configurable refill rate.
+4. If no tokens remain, the request is rejected with **HTTP 429 Too Many Requests**.
+5. Redis Lua scripting ensures all token operations are atomic, preventing race conditions under concurrent requests.
 
 ---
 
-## License
+## 📊 Performance
 
-This project is licensed under the MIT License.
+The project was load-tested using **k6**.
+
+Sample benchmark (local machine):
+
+- ~400 Requests/sec
+- Average latency: ~5 ms
+- P95 latency: ~14 ms
+- Atomic Redis updates under concurrent load
+
+---
+
+## 🚀 Future Improvements
+
+- Configurable per-route rate limiting
+- Redis Cluster support
+- Sliding Window & Leaky Bucket algorithms
+- Prometheus metrics
+- OpenAPI / Swagger documentation
+
+---
+
+## 📄 License
+
+This project is available under the MIT License.
