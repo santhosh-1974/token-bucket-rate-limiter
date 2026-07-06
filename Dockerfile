@@ -11,12 +11,19 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . . 
 RUN npm run build
-RUN npm prune --omit=dev 
+
+
+# ----------- Test --------------
+FROM builder AS test
+ENV NODE_ENV=test
+CMD ["npm", "test"]
 
 # -------------production-----------
 FROM node:22-alpine AS runner
 ENV NODE_ENV=production
 WORKDIR /app
+
+RUN npm prune --omit=dev 
 
 RUN addgroup -S appgroup && \
     adduser -S appuser -G appgroup

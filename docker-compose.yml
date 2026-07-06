@@ -8,7 +8,17 @@ services:
       - .env
     depends_on:
       - redis
-  
+  test:
+    build:
+      context: .
+      target: test
+    container_name: rate-limiter-test
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+
   redis:
     image: redis:8-alpine
     container_name: rate-limiter-redis

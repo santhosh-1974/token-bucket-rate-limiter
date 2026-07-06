@@ -3,12 +3,9 @@ import { describe ,it,expect,beforeAll,afterAll,beforeEach} from "vitest";
 import app from "../app"
 import {redis} from "../config/redis"
 import { loadTokenBucketScript } from "../services/tokenBucket.service";
-import dotenv from "dotenv"
-dotenv.config({
-    path:".env.test"
-})
+import {env} from "../config/env"
 
-const CAPACITY=Number(process.env.RATE_LIMIT_CAPACITY);
+const CAPACITY=env.RATE_LIMIT_CAPACITY
 
 describe("Token Bucket Rate Limiter",()=>{
     beforeAll(async()=>{
