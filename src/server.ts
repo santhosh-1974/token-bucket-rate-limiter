@@ -2,6 +2,7 @@ import app from "./app";
 import { env } from "./config/env";
 import { redis } from "./config/redis";
 import { loadTokenBucketScript } from "./services/tokenBucket.service";
+import { logger } from "./config/logger";
 
 let server: ReturnType<typeof app.listen>;
 
@@ -10,27 +11,27 @@ async function bootstrap() {
         await redis.connect();
         await loadTokenBucketScript();
         server = app.listen(env.PORT, () => {
-            console.log(`🚀 Server running on port ${env.PORT}`);
+            logger.info(`🚀 Server running on port ${env.PORT}`);
         });
         registerShutdownHandlers();
     } catch (error) {
-        console.error({ err: error }, "Application failed to start");
+        logger.fatal({ err: error }, "Application failed to start");
         process.exit(1);
     }
 }
 
 function registerShutdownHandlers() {
     async function shutdown(signal: string) {
-        console.log(`\n${signal} received. Shutting down...`);
+        logger.info(`\n${signal} received. Shutting down...`);
 
         server.close(async () => {
             try {
                 await redis.quit();
-                console.log("✅ Redis disconnected");
-                console.log("✅ Server stopped");
+                logger.info("✅ Redis disconnected");
+                logger.info("✅ Server stopped");
                 process.exit(0);
             } catch (error) {
-                console.error({ err: error }, "Shutdown failed");
+                logger.fatal({ err: error }, "Shutdown failed");
                 process.exit(1);
             }
         });

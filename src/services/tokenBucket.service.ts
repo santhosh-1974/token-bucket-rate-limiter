@@ -3,6 +3,7 @@ import fs  from "node:fs/promises"
 import {env} from '../config/env';
 import {redis} from "../config/redis"
 import { consumeTokenResult } from "../types/tokenBucket";
+import { logger } from "../config/logger";
 
 let scriptSha!:string;
 
@@ -10,7 +11,7 @@ export async function loadTokenBucketScript():Promise<void>{
     const scriptPath=path.join(process.cwd(),"src","lua","tokenBucket.lua");
     const script=await fs.readFile(scriptPath,"utf-8");
     scriptSha=await redis.scriptLoad(script);
-    console.log(" Token Bucket Lua script loaded");
+    logger.info(" Token Bucket Lua script loaded");
 }
 async function executeScript(key:string):Promise<number[]>{
     return(await redis.evalSha(scriptSha,{
@@ -33,7 +34,7 @@ export async function consumeToken(clientId:string):Promise<consumeTokenResult>{
         result=await executeScript(key); 
     }catch(err){
        if(err instanceof Error && err.message.includes("NOSCRIPT")){
-            console.log("Missing Lua script.Reloading ...")
+            logger.info("Missing Lua script.Reloading ...")
             await loadTokenBucketScript();
             result=await executeScript(key)
        }

@@ -16,6 +16,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       
+      - name: Create .env from example
+        run: |
+          cp .env.example .env
+          sed -i 's|redis://localhost:6379|redis://redis:6379|' .env
+
       - name: Build Docker Images
         run: docker compose build
 
@@ -25,3 +30,5 @@ jobs:
       - name: Cleanup
         if: always()
         run: docker compose down -v
+
+      
